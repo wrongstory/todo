@@ -57,33 +57,29 @@ function App() {
   return (
     <>
       <header>
+        <div className="clock-box">
+          <Clock />
+        </div>
         <div>
           <Wisesaying />
         </div>
-        <Clock />
-
-        <button onClick={() => setIsTimer((prev) => !prev)}>
-          {isTimer ? '스톱워치로 변경' : '타이머로 변경'}
-        </button>
-        {isTimer ? (
-          <Timer time={time} setTime={setTime} />
-        ) : (
-          <StopWatch time={time} setTime={setTime} />
-        )}
-
         <HeadLine />
       </header>
-      <nav>
-        <input />
-        <button>조회</button>
-      </nav>
-      <hr />
       <main>
-        <h2>It's your Todo List!!</h2>
-        <span>번호</span>
-        <span>내용</span>
-        <span>기능</span>
-        <hr />
+        <nav className="nav-bar">
+          <div className="nav-left">
+            <input className="todo-input" />
+            <button className="search-btn">조회</button>
+          </div>
+          <div className="nav-right">
+            <ToggleTimer
+              isTimer={isTimer}
+              setIsTimer={setIsTimer}
+              time={time}
+              setTime={setTime}
+            />
+          </div>
+        </nav>
         <MainList
           todo={todo}
           setTodo={setTodo}
@@ -112,6 +108,24 @@ const Clock = () => {
   }, []);
 
   return <div>{time.toLocaleTimeString()}</div>;
+};
+
+const ToggleTimer = ({ isTimer, setIsTimer, time, setTime }) => {
+  return (
+    <div className="toggle-timer">
+      <button
+        className="toggle-btn"
+        onClick={() => setIsTimer((prev) => !prev)}
+      >
+        {isTimer ? '스톱워치로 변경' : '타이머로 변경'}
+      </button>
+      {isTimer ? (
+        <Timer time={time} setTime={setTime} />
+      ) : (
+        <StopWatch time={time} setTime={setTime} />
+      )}
+    </div>
+  );
 };
 
 const formatTime = (secondes) => {
@@ -181,10 +195,10 @@ const Advice = () => {
   return (
     <>
       {!isLoaing && (
-        <>
-          <div>{data.message}</div>
-          <div>-{data.author}</div>
-        </>
+        <div className="advice-box">
+          <div className="message">"{data.message}"</div>
+          <div className="author">- {data.author}</div>
+        </div>
       )}
     </>
   );
@@ -245,31 +259,40 @@ const Timer = ({ time, setTime }) => {
 
 function MainList({ todo, setTodo, setCurrentTodo, currentTodo }) {
   return (
-    <ul>
-      {todo.map((el) => (
-        <li key={el.id} className={currentTodo === el.id ? 'current' : ''}>
-          <Todo
-            todo={el}
-            setTodo={setTodo}
-            setCurrentTodo={setCurrentTodo}
-            currentTodo={currentTodo}
-          />
-        </li>
-      ))}
-    </ul>
+    <table className="todo-table">
+      <thead>
+        <tr>
+          <th>번 호</th>
+          <th>할 일</th>
+          <th>소요시간</th>
+          <th>기능</th>
+        </tr>
+      </thead>
+      <tbody>
+        {todo.map((el, index) => (
+          <tr key={el.id} className={currentTodo === el.id ? 'current' : ''}>
+            <Todo
+              index={index + 1}
+              todo={el}
+              setTodo={setTodo}
+              setCurrentTodo={setCurrentTodo}
+              currentTodo={currentTodo}
+            />
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
-function Todo({ todo, setTodo, setCurrentTodo }) {
+function Todo({ index, todo, setTodo, setCurrentTodo }) {
   return (
     <>
-      <div>
-        {todo.content}
-        <br />
-        {formatTime(todo.time)}
-      </div>
-      <div>
-        <button onClick={() => setCurrentTodo(todo.id)}>update</button>
+      <td>{index}</td>
+      <td>{todo.content}</td>
+      <td>{formatTime(todo.time)}</td>
+      <td>
+        <button onClick={() => setCurrentTodo(todo.id)}>선택</button>
         <button>수정</button>
         <button
           onClick={() => {
@@ -284,7 +307,7 @@ function Todo({ todo, setTodo, setCurrentTodo }) {
         >
           삭제
         </button>
-      </div>
+      </td>
     </>
   );
 }
