@@ -13,6 +13,10 @@
 import { useRef, useState } from 'react';
 import './App.css';
 
+const HeadLine = () => {
+  return <h1>Todo List is now on your BukitList!</h1>;
+};
+
 function App() {
   const [todo, setTodo] = useState([
     {
@@ -44,27 +48,30 @@ function App() {
       <footer>Create by. L</footer>
     </>
   );
-  function HeadLine() {
-    return <h1>Todo List is now on your BukitList!</h1>;
-  }
 
   function MainList({ todo, setTodo }) {
     return (
       <ul>
-        {todo.map((todo) => (
-          <li key={todo.id}>
-            {todo.content}
-            <button>수정</button>
-            <button
-              onClick={() => {
-                setTodo((prev) => prev.filter((el) => el.id !== todo.id));
-              }}
-            >
-              삭제
-            </button>
-          </li>
+        {todo.map((el) => (
+          <Todo todo={el} setTodo={setTodo} />
         ))}
       </ul>
+    );
+  }
+
+  function Todo({ todo, setTodo }) {
+    return (
+      <li key={todo.id}>
+        {todo.content}
+        <button>수정</button>
+        <button
+          onClick={() => {
+            setTodo((prev) => prev.filter((el) => el.id !== todo.id));
+          }}
+        >
+          삭제
+        </button>
+      </li>
     );
   }
 
