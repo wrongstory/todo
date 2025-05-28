@@ -4,3 +4,7 @@
   padding: 2rem;
   text-align: center;
 }
+
+.current {
+  background-color: rgb(230, 234, 255);
+}
