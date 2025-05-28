@@ -10,7 +10,7 @@
   Custom Hook 을 만들고 사용 */
 }
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 
 const HeadLine = () => {
@@ -24,9 +24,13 @@ function App() {
       content: '안녕하세요',
     },
   ]);
+
   return (
     <>
       <header>
+        <Clock />
+        <Timer />
+        <StopWatch />
         <HeadLine />
       </header>
       <nav>
@@ -48,50 +52,163 @@ function App() {
       <footer>Create by. L</footer>
     </>
   );
+}
+// =======================================================================
+// function
+// =======================================================================
 
-  function MainList({ todo, setTodo }) {
-    return (
-      <ul>
-        {todo.map((el) => (
-          <Todo todo={el} setTodo={setTodo} />
-        ))}
-      </ul>
-    );
-  }
+const Clock = () => {
+  const [time, setTime] = useState(new Date());
 
-  function Todo({ todo, setTodo }) {
-    return (
-      <li key={todo.id}>
-        {todo.content}
-        <button>수정</button>
+  useEffect(() => {
+    setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+  }, []);
+
+  return <div>{time.toLocaleTimeString()}</div>;
+};
+
+const formatTime = (secondes) => {
+  const hour = String(Math.floor(secondes / 3600)).padStart(2, '0');
+  const min = String(Math.floor((secondes % 3600) / 60)).padStart(2, '0');
+  const sec = String(secondes % 60).padStart(2, '0');
+
+  const timeString = `${hour}:${min}:${sec}`;
+
+  return timeString;
+};
+
+const StopWatch = () => {
+  // 시작. 정지. 초기화
+  const [time, setTime] = useState(0);
+  const [isOn, setIsOn] = useState(false);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (isOn === true) {
+      const timerId = setInterval(() => {
+        setTime((prev) => prev + 1);
+      }, 1000);
+      timerRef.current = timerId;
+    } else {
+      clearInterval(timerRef.current);
+    }
+  }, [isOn]);
+
+  return (
+    <div>
+      {formatTime(time)}
+      <button onClick={() => setIsOn((prev) => !prev)}>
+        {isOn ? '끄기' : '켜기'}
+      </button>
+      <button
+        onClick={() => {
+          setTime(0);
+          setIsOn(false);
+        }}
+      >
+        리셋
+      </button>
+    </div>
+  );
+};
+
+const Timer = () => {
+  const [startTime, setStartTime] = useState(0);
+  const [isOn, setIsOn] = useState(false);
+  const [time, setTime] = useState(0);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (isOn && time > 0) {
+      const timerId = setInterval(() => {
+        setTime((prev) => prev - 1);
+      }, 1000);
+      timerRef.current = timerId;
+    } else if (!isOn || time == 0) {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [isOn, time]);
+
+  return (
+    <div>
+      <div>
+        {time ? formatTime(time) : formatTime(startTime)}
         <button
           onClick={() => {
-            setTodo((prev) => prev.filter((el) => el.id !== todo.id));
+            setIsOn(true);
+            setTime(time ? time : startTime);
           }}
         >
-          삭제
+          시작
         </button>
-      </li>
-    );
-  }
+        <button onClick={() => setIsOn(false)}>몀춤</button>
+        <button
+          onClick={() => {
+            setTime(0);
+            setStartTime(0);
+            setIsOn(false);
+          }}
+        >
+          리셋
+        </button>
+      </div>
 
-  function InputTodo({ setTodo }) {
-    const inputRef = useRef(null);
-    const addTodo = () => {
-      const newTodo = {
-        id: Number(new Date()),
-        // inputRef 에 current 를 찍어서 DOM 주소를 가져온 다음 DOM 요소의 value 를 가져옴
-        content: inputRef.current.value,
-      };
-      setTodo((prev) => [...prev, newTodo]);
-    };
-    return (
-      <>
-        <input ref={inputRef} />
-        <button onClick={addTodo}>추가</button>
-      </>
-    );
-  }
+      <input
+        type="range"
+        value={startTime}
+        min="0"
+        max="3600"
+        step="30"
+        onChange={(event) => setStartTime(Number(event.target.value))}
+      />
+    </div>
+  );
+};
+
+function MainList({ todo, setTodo }) {
+  return (
+    <ul>
+      {todo.map((el) => (
+        <Todo key={el.id} todo={el} setTodo={setTodo} />
+      ))}
+    </ul>
+  );
 }
 
+function Todo({ todo, setTodo }) {
+  return (
+    <li>
+      {todo.content}
+      <button>수정</button>
+      <button
+        onClick={() => {
+          setTodo((prev) => prev.filter((el) => el.id !== todo.id));
+        }}
+      >
+        삭제
+      </button>
+    </li>
+  );
+}
+
+function InputTodo({ setTodo }) {
+  const inputRef = useRef(null);
+  const addTodo = () => {
+    const newTodo = {
+      id: Number(new Date()),
+      // inputRef 에 current 를 찍어서 DOM 주소를 가져온 다음 DOM 요소의 value 를 가져옴
+      content: inputRef.current.value,
+    };
+    setTodo((prev) => [...prev, newTodo]);
+  };
+  return (
+    <>
+      <input ref={inputRef} />
+      <button onClick={addTodo}>추가</button>
+    </>
+  );
+}
 export default App;
